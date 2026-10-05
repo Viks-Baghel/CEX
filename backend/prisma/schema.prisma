@@ -11,3 +11,51 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User{
+  id       Int @id @default(autoincrement())
+  username String @unique
+  password String
+
+  orders Orders[]
+}
+
+model Stocks{
+    id      Int @id @default(autoincrement())
+    title   String @unique
+    symbol  String @unique
+
+    orders Orders[]
+    fills Fills[]
+}
+
+model Orders{
+    id        Int @id @default(autoincrement())
+    userId    Int 
+    side      String
+    type      String 
+    stockId   Int
+    price     Decimal
+    qty       Decimal
+    filledQty Decimal @default(0)
+    status    String
+
+    user  User  @relation(fields: [userId], references: [id])
+    stock Stocks @relation(fields: [stockId] , references: [id])
+
+    buyFills  Fills[] @relation("BuyOrder")
+    sellFills Fills[] @relation("SellOrder")
+}
+
+model Fills{
+  id            Int @id @default(autoincrement())
+  stockId       Int
+  price         Decimal
+  qty           Decimal
+  buyOrderId    Int
+  sellOrderId   Int
+
+  stock Stocks @relation(fields: [stockId] , references: [id])
+  buyOrder  Orders @relation("BuyOrder", fields: [buyOrderId], references: [id])
+  sellOrder Orders @relation("SellOrder", fields: [sellOrderId], references: [id])
+}
